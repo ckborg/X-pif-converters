@@ -8,14 +8,14 @@ def s3000_metadata_to_pif(closed_txt):
     # create chemical system and property array
     my_pif = ChemicalSystem()
     my_pif.properties = []
+    my_pif.names = [closed_txt.split("/")[-1].split(".")[0]]
 
     with open(closed_txt, 'rU') as open_txt:
         lines = open_txt.readlines()
         for index, line in enumerate(lines):
-
+            print line
             # clean up newline chars
             line = line.replace("\n", "")
-
             # search for keywords in line and set props accordingly
             if "Date=" in line:
                 date = Value(name="Experiment date", scalars=line.split("=")[-1])
@@ -36,6 +36,20 @@ def s3000_metadata_to_pif(closed_txt):
 
     return my_pif
 
+def add_sem_image_to_pif(BMP_file):
+    for system in pifs:
+        # check for same name
+        if system.names == [BMP_file.split("/")[-1].split(".")[0]]:
+            # append file ref to pif from metadata output.
+            if system.properties:
+                for prop in system.properties:
+                    if prop.name == "SEM":
+                        prop.files = FileReference(mime_type="image/bmp", relative_path=BMP_file)
+
+    print(pif.dumps(pifs, indent=2))
+
+    return pifs
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -49,28 +63,15 @@ if __name__ == '__main__':
     # first iterate through dir and look for metadata file. Parse metadata if exists.
     for f in args.txt:
         if ".txt" in f:
-            print ("PARSING: ", f)
+            print("PARSING: ", f)
             metadata_pif = s3000_metadata_to_pif(f)
-            metadata_pif.names = [f.split("/")[-1].split(".")[0]]
             pifs.append(metadata_pif)
 
     # second iterate through dir and look for .bmp image.
     for f in args.txt:
         if ".bmp" in f:
-            print ("PARSING: ", f)
-
-            for system in pifs:
-
-                # check for same name
-                if system.names == [f.split("/")[-1].split(".")[0]]:
-
-                    # append file ref to pif from metadata output.
-                    if system.properties:
-                        for prop in system.properties:
-                            if prop.name == "SEM":
-                                prop.files = FileReference(mime_type="image/bmp", relative_path=f)
-
-            print (pif.dumps(pifs, indent=4))
+            print("PARSING: ", f)
+            add_sem_image_to_pif(f)
 
             # output file
             f_out = f.replace(".bmp", ".json")
