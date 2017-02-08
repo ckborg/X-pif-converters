@@ -40,16 +40,16 @@ def raw4_to_pif(closed_txt):
                     theta.append(line.split(",")[0].strip())
                     intensity.append(line.split(",")[1].strip())
 
-        # define prop and set scalars
-        xrd = Property(name="Intensity", scalars=intensity, units="arb. unit")
-        theta = Value(name="2$\\theta$", scalars=theta, units="$\circ$")
-        xrd.conditions = [theta, date, wavelength]
+    # define prop and set scalars
+    xrd = Property(name="Intensity", scalars=intensity, units="arb. unit")
+    theta = Value(name="2$\\theta$", scalars=theta, units="$\circ$")
+    xrd.conditions = [theta, date, wavelength]
 
-        my_pif.properties.append(xrd)
+    my_pif.properties.append(xrd)
 
-        print (pif.dumps(my_pif, indent=4))
+    print (pif.dumps(my_pif, indent=4))
 
-        return [my_pif]
+    return [my_pif]
 
 
 if __name__ == '__main__':

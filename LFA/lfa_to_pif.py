@@ -59,20 +59,20 @@ def lfa457_to_pif(closed_csv):
                         time_array.append(row[1])
                         diffusivity_array.append(row[3]+"$\pm$"+row[4])
 
-        heat_capacity = Property('Diffusivity', scalars=diffusivity_array, units='mm$^2$/s')
-        temp = Value(name='Temperature', scalars=temp_array, units='$^\circ$C')
-        time = Value(name='Time', scalars=time_array, units='min')
+    heat_capacity = Property('Diffusivity', scalars=diffusivity_array, units='mm$^2$/s')
+    temp = Value(name='Temperature', scalars=temp_array, units='$^\circ$C')
+    time = Value(name='Time', scalars=time_array, units='min')
 
-        heat_capacity.conditions = [temp, time, date, atmosphere, flow]
-        heat_capacity.instrument = measurement_device
+    heat_capacity.conditions = [temp, time, date, atmosphere, flow]
+    heat_capacity.instrument = measurement_device
 
-        my_pif.properties.append(heat_capacity)
-        my_pif.properties.append(thickness)
-        my_pif.properties.append(diameter)
+    my_pif.properties.append(heat_capacity)
+    my_pif.properties.append(thickness)
+    my_pif.properties.append(diameter)
 
-        print (pif.dumps(my_pif, indent=4))
+    print (pif.dumps(my_pif, indent=4))
 
-        return my_pif
+    return my_pif
 
 
 if __name__ == '__main__':

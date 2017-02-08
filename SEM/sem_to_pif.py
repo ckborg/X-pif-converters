@@ -30,11 +30,11 @@ def s3000_metadata_to_pif(closed_txt):
             if "Vacuum" in line:
                 vac = Value(name="Vacuum", scalars=line.split("=")[-1])
 
-        SEM = Property(name="SEM")
-        SEM.conditions = [date, mag, volt, current, wd, vac]
-        my_pif.properties.append(SEM)
+    SEM = Property(name="SEM")
+    SEM.conditions = [date, mag, volt, current, wd, vac]
+    my_pif.properties.append(SEM)
 
-        return my_pif
+    return my_pif
 
 
 if __name__ == '__main__':

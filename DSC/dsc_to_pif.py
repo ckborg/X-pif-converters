@@ -56,22 +56,22 @@ def netzsch_3500_to_pif(closed_csv):
                     time_array.append(row[1])
                     heat_capacity_array.append(row[2])
 
-        # define property and append scalar values
-        heat_capacity = Property('C$_p$', scalars=heat_capacity_array, units='J/(gK)')
-        temp = Value(name='Temperature', scalars=temp_array, units='$^\circ$C')
-        time = Value(name='Time', scalars=time_array, units='min')
+    # define property and append scalar values
+    heat_capacity = Property('C$_p$', scalars=heat_capacity_array, units='J/(gK)')
+    temp = Value(name='Temperature', scalars=temp_array, units='$^\circ$C')
+    time = Value(name='Time', scalars=time_array, units='min')
 
-        # append conditions.
-        heat_capacity.conditions = [temp, time, date, crucible, atmosphere]
-        heat_capacity.instrument = measurement_device
+    # append conditions.
+    heat_capacity.conditions = [temp, time, date, crucible, atmosphere]
+    heat_capacity.instrument = measurement_device
 
-        # append property to pif
-        my_pif.properties.append(heat_capacity)
+    # append property to pif
+    my_pif.properties.append(heat_capacity)
 
-        # print dump to check format
-        print (pif.dumps(my_pif, indent=4))
+    # print dump to check format
+    print (pif.dumps(my_pif, indent=4))
 
-        return my_pif
+    return my_pif
 
 
 if __name__ == '__main__':
