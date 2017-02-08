@@ -4,7 +4,7 @@ from pypif import pif
 from pypif.obj import *
 
 
-def XRD_to_pif(closed_txt):
+def raw4_to_pif(closed_txt):
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     for f in args.csv:
         print ("PARSING: ", f)
-        pifs = XRD_to_pif(f)
+        pifs = raw4_to_pif(f)
 
         # add chemical_formula from filename.
         for system in pifs:

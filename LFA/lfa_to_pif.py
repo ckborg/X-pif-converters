@@ -3,7 +3,7 @@ import argparse
 from pypif import pif
 from pypif.obj import *
 
-def LFA_to_pif(closed_csv):
+def lfa457_to_pif(closed_csv):
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     for f in args.csv:
         print ("PARSING: ", f)
-        pifs = LFA_to_pif(f)
+        pifs = lfa457_to_pif(f)
 
         f_out = f.replace(".csv", ".json")
         pif.dump(pifs, open(f_out, "w"), indent=4)

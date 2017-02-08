@@ -3,7 +3,7 @@ import argparse
 from pypif import pif
 from pypif.obj import *
 
-def parse_SEM_metadata(closed_txt):
+def s3000_metadata_to_pif(closed_txt):
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     for f in args.txt:
         if ".txt" in f:
             print ("PARSING: ", f)
-            metadata_pif = parse_SEM_metadata(f)
+            metadata_pif = s3000_metadata_to_pif(f)
             metadata_pif.names = [f.split("/")[-1].split(".")[0]]
             pifs.append(metadata_pif)
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
                     if system.properties:
                         for prop in system.properties:
                             if prop.name == "SEM":
-                                prop.files=FileReference(mime_type="image/bmp", relative_path=f)
+                                prop.files = FileReference(mime_type="image/bmp", relative_path=f)
 
             print (pif.dumps(pifs, indent=4))
 
