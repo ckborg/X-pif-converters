@@ -4,7 +4,7 @@ from pypif import pif
 from pypif.obj import *
 
 
-def dsc_to_pif(closed_csv):
+def netzsch_3500_to_pif(closed_csv):
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     for f in args.csv:
         print ("PARSING: ", f)
-        pifs = dsc_to_pif(f)
+        pifs = netzsch_3500_to_pif(f)
 
         f_out = f.replace(".csv", ".json")
         pif.dump(pifs, open(f_out, "w"), indent=4)
