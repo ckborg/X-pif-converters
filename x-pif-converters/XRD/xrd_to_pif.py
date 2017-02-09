@@ -36,18 +36,23 @@ def raw4_to_pif(closed_txt):
                 header_line_index = index
 
             if header_line_index:
-                if index > header_line_index:
-                    theta.append(line.split(",")[0].strip())
-                    intensity.append(line.split(",")[1].strip())
+                if index > header_line_index+1:
+                    theta.append(float(line.split(",")[0].strip()))
+                    intensity.append(int(line.split(",")[1].strip()))
 
     # define prop and set scalars
     xrd = Property(name="Intensity", scalars=intensity, units="arb. unit")
-    theta = Value(name="2$\\theta$", scalars=theta, units="$\circ$")
+    I_max_index = intensity.index(max(intensity))
+    print I_max_index
+    I_max = Property(name="2$\\theta$ (I$_{max}$)", scalars=theta[I_max_index], units="$^\circ$")
+    print pif.dumps(I_max)
+    theta = Value(name="2$\\theta$", scalars=theta, units="$^\circ$")
     xrd.conditions = [theta, date, wavelength]
 
     my_pif.properties.append(xrd)
+    my_pif.properties.append(I_max)
 
-    print (pif.dumps(my_pif, indent=4))
+    #print (pif.dumps(my_pif, indent=4))
 
     return [my_pif]
 
