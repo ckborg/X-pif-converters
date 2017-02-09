@@ -53,14 +53,14 @@ def netzsch_3500_to_pif(closed_csv):
             # Iterate through values after header_row.
             if header_row_index:
                 if index > header_row_index:
-                    temp_array.append(row[0])
-                    time_array.append(row[1])
-                    heat_capacity_array.append(row[2])
+                    temp_array.append(float(row[0]))
+                    time_array.append(float(row[1]))
+                    heat_capacity_array.append(float(row[2]))
     float_capacities = [float(h) for h in heat_capacity_array]
-    peak_indexes = peakutils.peak.indexes(a, thres=0.35/max(a), min_dist=1)
+    peak_indexes = peakutils.peak.indexes(float_capacities, thres=0.35/max(float_capacities), min_dist=1)
     # if peaks are located, add the phase transition property
     if len(peak_indexes) > 0:
-        dsc_phase_transition = Property(name='Temperature of Phase Transition', scalars=str(temp_array[x[0]]), units='$^\circ$C')
+        dsc_phase_transition = Property(name='Temperature of Phase Transition', scalars=str(temp_array[peak_indexes[0]]), units='$^\circ$C')
         my_pif.properties.append(dsc_phase_transition)
 
     # define property and append scalar values
