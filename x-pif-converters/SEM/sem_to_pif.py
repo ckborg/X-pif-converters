@@ -14,7 +14,6 @@ def s3000_metadata_to_pif(closed_txt):
     with open(closed_txt, 'rU') as open_txt:
         lines = open_txt.readlines()
         for index, line in enumerate(lines):
-            print line
             # clean up newline chars
             line = line.replace("\n", "")
             # search for keywords in line and set props accordingly
@@ -78,14 +77,14 @@ if __name__ == '__main__':
     # first iterate through dir and look for metadata file. Parse metadata if exists.
     for f in args.txt:
         if ".txt" in f:
-            print("PARSING: ", f)
+            print("PARSING: %s" % f)
             metadata_pif = s3000_metadata_to_pif(f)
             pifs.append(metadata_pif)
 
     # second iterate through dir and look for .bmp image.
     for f in args.txt:
         if ".bmp" in f:
-            print("PARSING: ", f)
+            print("PARSING: %s" % f)
             add_sem_image_to_pif(f)
 
             # output file
