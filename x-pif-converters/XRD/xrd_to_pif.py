@@ -2,9 +2,11 @@ import csv
 import argparse
 from pypif import pif
 from pypif.obj import *
+from pyxrd.file_parsers.xrd_parsers import BrkRAWParser
+import re
 
 
-def raw4_to_pif(closed_txt):
+def raw4_txt_to_pif(closed_txt):
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
@@ -57,6 +59,44 @@ def raw4_to_pif(closed_txt):
     return [my_pif]
 
 
+def raw_to_pif(raw_xrd_file):
+
+    # parses .raw file
+    try:
+        parsed_raw = BrkRAWParser.parse(raw_xrd_file)
+
+        my_pif = ChemicalSystem()
+        my_pif.chemical_formula = raw_xrd_file.split("/")[-1].replace(".raw", "").split("_")[0]
+        my_pif.ids = "".join(raw_xrd_file.split("/")[-1].replace(".raw", "").split("_")[1:])
+
+        my_pif.properties = []
+
+        theta = []
+        intensity = []
+        for xrd in parsed_raw:
+            # xrd.date
+            a1 = Value(name="wavelength of $\\alpha_1$", scalars=xrd.alpha1, units="$\AA$")
+            a2 = Value(name="wavelength of $\\alpha_2$", scalars=xrd.alpha2, units="$\AA$")
+
+            for ndarray in xrd.data:
+                theta.append(float(ndarray[0]))
+                intensity.append(float(ndarray[1]))
+
+        peaks = Property(name="Intensity", scalars=intensity, units="arb. unit")
+        I_max_index = intensity.index(max(intensity))
+        I_max = Property(name="2$\\theta$ (I$_{max}$)", scalars=theta[I_max_index], units="$^\circ$")
+        twotheta = Value(name="2$\\theta$", scalars=theta, units="$^\circ$")
+        peaks.conditions = [twotheta, a1, a2]
+
+        my_pif.properties.append(peaks)
+        my_pif.properties.append(I_max)
+
+        return my_pif
+
+    except Exception as e:
+        print e
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('csv', nargs='*', help='path to XRD txt file')
@@ -64,12 +104,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for f in args.csv:
-        print ("PARSING: ", f)
-        pifs = raw4_to_pif(f)
+        print("PARSING: %s" % f)
+        pifs = raw_to_pif(f)
 
-        # add chemical_formula from filename.
-        for system in pifs:
-            system.chemical_formula = f.split("/")[-1].split("-")[0]
-
-        f_out = f.replace(".txt", ".json")
+        f_out = f.replace(".raw", ".json")
+        print("OUTFILE: %s" % f_out)
         pif.dump(pifs, open(f_out, "w"), indent=4)
