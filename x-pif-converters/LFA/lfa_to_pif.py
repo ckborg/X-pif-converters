@@ -34,10 +34,10 @@ def lfa457_to_pif(closed_csv):
                     measurement_device = Instrument(name=row[1].replace("#", ""))
 
                 if "#Thickness_RT/mm" in row[0]:
-                    thickness = Property(name="Thickness", scalars=row[1])
+                    thickness = Property(name="Thickness", scalars=row[1], units="mm")
 
                 if "#Diameter/mm" in row[0]:
-                    diameter = Property(name="Diameter", scalars=row[1])
+                    diameter = Property(name="Diameter", scalars=row[1], units="mm")
 
                 if "#Date" in row[0]:
                     date = Value(name="Experiment date", scalars=row[1].strip())
@@ -49,21 +49,40 @@ def lfa457_to_pif(closed_csv):
                     flow = Value(name="Flow rate", scalars=row[1], units="ml/min")
 
                 # shot number defines header_row
-                if "#Shot number" in row[0]:
+                if "#Shot" in row[0] and "Std_Dev" in row[4]:
                     header_row_index = index
+                    header_row = row
+                    for h_index, h in enumerate(header_row):
+                        if "Temperature" in h:
+                            temp_index = h_index
+                        if "Diffusivity" in h:
+                            diff_index = h_index
+                        if "Std_Dev" in h:
+                            std_index = h_index
+                if "#Shot" in row[0]:
+                    header_row_index = index
+                    header_row = row
+                    for h_index, h in enumerate(header_row):
+                        if "Temperature" in h:
+                            temp_index = h_index
+                        if "Diffusivity" in h:
+                            diff_index = h_index
+                        std_index = False
 
                 # we could find header row and collect all rows after it or regex row[0] for a decimal number
                 if header_row_index:
                     if index > header_row_index:
-                        temp_array.append(row[2])
-                        time_array.append(row[1])
-                        diffusivity_array.append(row[3]+"$\pm$"+row[4])
+                        temp_array.append(row[temp_index])
+                        if std_index:
+                            diffusivity_array.append(row[diff_index]+"$\pm$"+row[std_index])
+                        else:
+                            diffusivity_array.append(row[diff_index])
 
     heat_capacity = Property('Diffusivity', scalars=diffusivity_array, units='mm$^2$/s')
     temp = Value(name='Temperature', scalars=temp_array, units='$^\circ$C')
-    time = Value(name='Time', scalars=time_array, units='min')
+    #time = Value(name='Time', scalars=time_array, units='min')
 
-    heat_capacity.conditions = [temp, time, date, atmosphere, flow]
+    heat_capacity.conditions = [temp, date, atmosphere, flow]
     heat_capacity.instrument = measurement_device
 
     my_pif.properties.append(heat_capacity)
@@ -82,7 +101,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for f in args.csv:
-        print ("PARSING: ", f)
+        print ("PARSING: %s" % f)
         pifs = lfa457_to_pif(f)
 
         f_out = f.replace(".csv", ".json")
