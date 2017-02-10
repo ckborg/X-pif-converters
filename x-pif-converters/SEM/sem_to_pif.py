@@ -2,6 +2,7 @@ import csv
 import argparse
 from pypif import pif
 from pypif.obj import *
+from PIL import Image
 
 def s3000_metadata_to_pif(closed_txt):
 
@@ -50,6 +51,20 @@ def add_sem_image_to_pif(BMP_file):
 
     return pifs
 
+def convert_tif_to_jpeg(tiff_image):
+
+    im = Image.open(tiff_image)
+    im.save(tiff_image.replace(".tif", ".jpeg"), "JPEG")
+    print("CONVERTED: %s to %s" % (tiff_image, tiff_image.replace(".tif", ".jpeg")))
+
+def create_pif_without_metadata(jpeg_image):
+
+    my_pif = ChemicalSystem()
+    my_pif.names = [jpeg_image.split("/")[-1].split(".")[0]]
+    my_pif.properties = [Property(name="SEM", files=FileReference(mime_type="image/jpeg", relative_path=jpeg_image))]
+
+    return [my_pif]
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -76,3 +91,11 @@ if __name__ == '__main__':
             # output file
             f_out = f.replace(".bmp", ".json")
             pif.dump(pifs, open(f_out, "w"), indent=4)
+
+    for f in args.txt:
+        if ".tif" in f:
+            convert_tif_to_jpeg(f)
+        if ".jpeg" in f:
+            system = create_pif_without_metadata(f)
+            f_out = f.replace(".jpeg", ".json")
+            pif.dump(system, open(f_out, "w"), indent=4)
