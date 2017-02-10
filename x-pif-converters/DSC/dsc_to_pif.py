@@ -24,43 +24,45 @@ def netzsch_3500_to_pif(closed_csv):
         reader = csv.reader(open_csv)
         for index, row in enumerate(reader):
 
-            # meta data is stored above property with header column = row[0]
+            # ensure row has values
+            if len(row) != 0:
 
-            # set values based on row[0]
-            if '#IDENTITY:' in row[0]:
-                my_pif.chemical_formula = row[1].strip()
+                # set values based on row[0]
+                if '#IDENTITY:' in row[0]:
+                    my_pif.chemical_formula = row[1].strip()
 
-            if "#INSTRUMENT:" in row[0]:
-                measurement_device = Instrument(name=row[1].split(" ")[0], model=row[1].split(" ")[2])
+                if "#INSTRUMENT:" in row[0]:
+                    measurement_device = Instrument(name=row[1].split(" ")[0], model=row[1].split(" ")[2])
 
-            if "#SAMPLE MASS /mg:" in row[0]:
-                prop = Property(name='sample mass', scalars=row[1], units='mg')
-                my_pif.properties.append(prop)
+                if "#SAMPLE MASS /mg:" in row[0]:
+                    prop = Property(name='sample mass', scalars=row[1], units='mg')
+                    my_pif.properties.append(prop)
 
-            if "#DATE/TIME:" in row[0]:
-                date = Value(name="Experiment date", scalars=row[1].strip())
+                if "#DATE/TIME:" in row[0]:
+                    date = Value(name="Experiment date", scalars=row[1].strip())
 
-            if "#TYPE OF CRUCIBLE:" in row[0]:
-                crucible = Value(name="Crucible", scalars=row[1].strip()+" "+row[2].strip())
+                if "#TYPE OF CRUCIBLE:" in row[0]:
+                    crucible = Value(name="Crucible", scalars=row[1].strip()+" "+row[2].strip())
 
-            if "#PROTECTIVE GAS:" in row[0]:
-                atmosphere = Value(name="Atmosphere", scalars=row[1].strip())
+                if "#PROTECTIVE GAS:" in row[0]:
+                    atmosphere = Value(name="Atmosphere", scalars=row[1].strip())
 
-            # Temp indicates header row. Define header_row_index.
-            if '##Temp.' in row[0]:
-                header_row_index = index
+                # Temp indicates header row. Define header_row_index.
+                if '##Temp.' in row[0]:
+                    header_row_index = index
 
-            # Iterate through values after header_row.
-            if header_row_index:
-                if index > header_row_index:
-                    temp_array.append(row[0])
-                    time_array.append(row[1])
-                    heat_capacity_array.append(row[2])
+                # Iterate through values after header_row.
+                if header_row_index:
+                    if index > header_row_index:
+                        temp_array.append(float(row[0]))
+                        time_array.append(float(row[1]))
+                        heat_capacity_array.append(float(row[2]))
+
     float_capacities = [float(h) for h in heat_capacity_array]
-    peak_indexes = peakutils.peak.indexes(a, thres=0.35/max(a), min_dist=1)
+    peak_indexes = peakutils.peak.indexes(float_capacities, thres=0.35/max(float_capacities), min_dist=1)
     # if peaks are located, add the phase transition property
     if len(peak_indexes) > 0:
-        dsc_phase_transition = Property(name='Temperature of Phase Transition', scalars=str(temp_array[x[0]]), units='$^\circ$C')
+        dsc_phase_transition = Property(name='Temperature of Phase Transition', scalars=str(temp_array[peak_indexes[0]]), units='$^\circ$C')
         my_pif.properties.append(dsc_phase_transition)
 
     # define property and append scalar values
@@ -88,7 +90,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for f in args.csv:
-        print ("PARSING: ", f)
+        print("PARSING: %s" % f)
         pifs = netzsch_3500_to_pif(f)
 
         f_out = f.replace(".csv", ".json")
