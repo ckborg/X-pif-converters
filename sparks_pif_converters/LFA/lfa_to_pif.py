@@ -90,8 +90,6 @@ def lfa457_to_pif(closed_csv):
     my_pif.properties.append(thickness)
     my_pif.properties.append(diameter)
 
-    print (pif.dumps(my_pif, indent=4))
-
     return my_pif
 
 
