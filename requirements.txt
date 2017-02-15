@@ -1,3 +1,4 @@
 pypif
 peakutils
 pillow
+pyxrd

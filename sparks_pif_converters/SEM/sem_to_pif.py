@@ -4,6 +4,7 @@ from pypif import pif
 from pypif.obj import *
 from PIL import Image
 
+
 def s3000_metadata_to_pif(closed_txt):
 
     # create chemical system and property array
@@ -36,19 +37,6 @@ def s3000_metadata_to_pif(closed_txt):
 
     return my_pif
 
-def add_sem_image_to_pif(BMP_file):
-    for system in pifs:
-        # check for same name
-        if system.names == [BMP_file.split("/")[-1].split(".")[0]]:
-            # append file ref to pif from metadata output.
-            if system.properties:
-                for prop in system.properties:
-                    if prop.name == "SEM":
-                        prop.files = FileReference(mime_type="image/bmp", relative_path=BMP_file)
-
-    print(pif.dumps(pifs, indent=2))
-
-    return pifs
 
 def convert_tif_to_jpeg(tiff_image):
 
@@ -56,45 +44,34 @@ def convert_tif_to_jpeg(tiff_image):
     im.save(tiff_image.replace(".tif", ".jpeg"), "JPEG")
     print("CONVERTED: %s to %s" % (tiff_image, tiff_image.replace(".tif", ".jpeg")))
 
-def create_pif_without_metadata(jpeg_image):
+
+def image_to_pif(image, file_type):
+    print("PARSING: "+image)
 
     my_pif = ChemicalSystem()
-    my_pif.names = [jpeg_image.split("/")[-1].split(".")[0]]
-    my_pif.properties = [Property(name="SEM", files=FileReference(mime_type="image/jpeg", relative_path=jpeg_image))]
+    my_pif.names = [image.split("/")[-1].split(".")[0]]
+    my_pif.properties = [Property(name="SEM", files=FileReference(mime_type="image/"+file_type, relative_path=image))]
 
     return [my_pif]
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('txt', nargs='*', help='path to SEM files')
+    parser.add_argument('images', nargs='*', help='path to SEM images (.tif, .jpeg, .bmp)')
 
     args = parser.parse_args()
 
-    # empty array for pifs
-    pifs = []
+    for f in args.images:
 
-    # first iterate through dir and look for metadata file. Parse metadata if exists.
-    for f in args.txt:
-        if ".txt" in f:
-            print("PARSING: %s" % f)
-            metadata_pif = s3000_metadata_to_pif(f)
-            pifs.append(metadata_pif)
-
-    # second iterate through dir and look for .bmp image.
-    for f in args.txt:
-        if ".bmp" in f:
-            print("PARSING: %s" % f)
-            add_sem_image_to_pif(f)
-
-            # output file
-            f_out = f.replace(".bmp", ".json")
-            pif.dump(pifs, open(f_out, "w"), indent=4)
-
-    for f in args.txt:
         if ".tif" in f:
             convert_tif_to_jpeg(f)
+
         if ".jpeg" in f:
-            system = create_pif_without_metadata(f)
+            system = image_to_pif(f, "jpeg")
             f_out = f.replace(".jpeg", ".json")
+            pif.dump(system, open(f_out, "w"), indent=4)
+
+        if ".bmp" in f:
+            system = image_to_pif(f, "bmp")
+            f_out = f.replace(".bmp", ".json")
             pif.dump(system, open(f_out, "w"), indent=4)
