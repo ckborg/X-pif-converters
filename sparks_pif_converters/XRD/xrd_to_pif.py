@@ -37,24 +37,19 @@ def raw4_txt_to_pif(closed_txt):
             if "[Data]" in line:
                 header_line_index = index
 
-            if header_line_index:
-                if index > header_line_index+1:
-                    theta.append(float(line.split(",")[0].strip()))
-                    intensity.append(int(line.split(",")[1].strip()))
+            if header_line_index and index > header_line_index + 1:
+                theta.append(float(line.split(",")[0].strip()))
+                intensity.append(int(line.split(",")[1].strip()))
 
     # define prop and set scalars
     xrd = Property(name="Intensity", scalars=intensity, units="arb. unit")
     I_max_index = intensity.index(max(intensity))
-    print I_max_index
     I_max = Property(name="2$\\theta$ (I$_{max}$)", scalars=theta[I_max_index], units="$^\circ$")
-    print pif.dumps(I_max)
     theta = Value(name="2$\\theta$", scalars=theta, units="$^\circ$")
     xrd.conditions = [theta, date, wavelength]
 
     my_pif.properties.append(xrd)
     my_pif.properties.append(I_max)
-
-    #print (pif.dumps(my_pif, indent=4))
 
     return [my_pif]
 
@@ -94,19 +89,27 @@ def raw_to_pif(raw_xrd_file):
         return my_pif
 
     except Exception as e:
-        print e
+        print(e)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('csv', nargs='*', help='path to XRD txt file')
+    parser.add_argument('files', nargs='*', help='path to XRD files (.raw, .txt)')
 
     args = parser.parse_args()
 
-    for f in args.csv:
-        print("PARSING: %s" % f)
-        pifs = raw_to_pif(f)
+    for f in args.files:
 
-        f_out = f.replace(".raw", ".json")
-        print("OUTFILE: %s" % f_out)
-        pif.dump(pifs, open(f_out, "w"), indent=4)
+        if ".txt" in f:
+            print ("PARSING: {}".format(f))
+            pifs = raw4_txt_to_pif(f)
+            f_out = f.replace(".txt", ".json")
+            print ("OUTPUT: {}".format(f_out))
+            pif.dump(pifs, open(f_out, "w"), indent=4)
+
+        if ".raw" in f:
+            print ("PARSING: {}".format(f))
+            pifs = raw_to_pif(f)
+            f_out = f.replace(".raw", ".json")
+            print ("OUTPUT: {}".format(f_out))
+            pif.dump(pifs, open(f_out, "w"), indent=4)
