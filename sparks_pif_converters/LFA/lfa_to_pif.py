@@ -4,9 +4,11 @@ from pypif import pif
 from pypif.obj import *
 
 def lfa457_to_pif(closed_csv):
+    print("FILE IDENTIFIED AS LFA-457: {}").format(closed_csv)
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
+    my_pif.ids = [closed_csv.split("/")[-1].split("_")[0]]
     my_pif.properties = []
 
     # Store index so that iteration can start at next row. Default to False when no header is found.
@@ -100,8 +102,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for f in args.csv:
-        print ("PARSING: %s" % f)
+        print("PARSING: {}".format(f))
         pifs = lfa457_to_pif(f)
-
         f_out = f.replace(".csv", ".json")
+        print("OUTPUT FILE: {}").format(f_out)
         pif.dump(pifs, open(f_out, "w"), indent=4)
