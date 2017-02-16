@@ -10,6 +10,7 @@ def netzsch_3500_to_pif(closed_csv):
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
+    my_pif.ids = [closed_csv.split("/")[-1].split("_")[0]]
     my_pif.properties = []
 
     # Store index so that iteration can start at next row. Default to False when no header is found.
@@ -49,6 +50,9 @@ def netzsch_3500_to_pif(closed_csv):
             if "#PROTECTIVE GAS:" in row[0]:
                 atmosphere = Value(name="Atmosphere", scalars=row[1].strip())
 
+            if "#RANGE:" in row[0]:
+                heating_rate = Value(name="Heating rate", scalars=row[1].split("/")[1].split("(")[0], units="K/min")
+
             # Temp indicates header row. Define header_row_index.
             if '##Temp.' in row[0]:
                 header_row_index = index
@@ -73,7 +77,7 @@ def netzsch_3500_to_pif(closed_csv):
     time = Value(name='Time', scalars=time_array, units='min')
 
     # append conditions.
-    heat_capacity.conditions = [temp, time, date, crucible, atmosphere]
+    heat_capacity.conditions = [temp, date, crucible, atmosphere, heating_rate]
     heat_capacity.instrument = measurement_device
 
     # append property to pif
@@ -92,8 +96,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for f in args.csv:
-        print("PARSING: %s" % f)
+        print("PARSING: {}".format(f))
         pifs = netzsch_3500_to_pif(f)
         f_out = f.replace(".csv", ".json")
-        print("OUTPUT FILE: %s" % f_out)
+        print("OUTPUT FILE: {}").format(f_out)
         pif.dump(pifs, open(f_out, "w"), indent=4)
