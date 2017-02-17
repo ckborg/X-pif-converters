@@ -10,6 +10,7 @@ def raw4_txt_to_pif(closed_txt):
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
+    my_pif.ids = [closed_txt.split("/")[-1].split("_")[0]]
     my_pif.properties = []
 
     # Store header index so that iteration can start at next row. Default to False when no header is found.
@@ -55,21 +56,21 @@ def raw4_txt_to_pif(closed_txt):
 
 
 def raw_to_pif(raw_xrd_file):
+    print("FILE IDENTIFIED AS .raw: {}").format(raw_xrd_file)
 
     # parses .raw file
     try:
-        parsed_raw = BrkRAWParser.parse(raw_xrd_file)
-
         my_pif = ChemicalSystem()
-        my_pif.chemical_formula = raw_xrd_file.split("/")[-1].replace(".raw", "").split("_")[0]
-        my_pif.ids = "".join(raw_xrd_file.split("/")[-1].replace(".raw", "").split("_")[1:])
-
+        my_pif.ids = [raw_xrd_file.split("/")[-1].split("_")[0]]
+        my_pif.chemical_formula = raw_xrd_file.split("/")[-1].replace(".raw", "").split("_")[1]
         my_pif.properties = []
 
         theta = []
         intensity = []
+
+        parsed_raw = BrkRAWParser.parse(raw_xrd_file)
         for xrd in parsed_raw:
-            # xrd.date
+            # print(vars(xrd))
             a1 = Value(name="wavelength of $\\alpha_1$", scalars=xrd.alpha1, units="$\AA$")
             a2 = Value(name="wavelength of $\\alpha_2$", scalars=xrd.alpha2, units="$\AA$")
 
