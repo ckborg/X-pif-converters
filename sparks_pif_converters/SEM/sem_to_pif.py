@@ -41,16 +41,26 @@ def s3000_metadata_to_pif(closed_txt):
 def convert_tif_to_jpeg(tiff_image):
 
     im = Image.open(tiff_image)
-    im.save(tiff_image.replace(".tif", ".jpeg"), "JPEG")
+    jpeg_path = tiff_image.replace(".tif", ".jpeg")
+    im.save(jpeg_path, "JPEG")
     print("CONVERTED: %s to %s" % (tiff_image, tiff_image.replace(".tif", ".jpeg")))
 
+    return jpeg_path
 
-def image_to_pif(image, file_type):
-    print("PARSING: "+image)
+def image_to_pif(image_path):
+
+    print("PARSING: {}").format(image_path)
+
+    file_type = image_path.split(".")[-1]
+
+    if file_type == "tif":
+        jpeg_path = convert_tif_to_jpeg(image_path)
+        image_to_pif(jpeg_path)
 
     my_pif = ChemicalSystem()
-    my_pif.names = [image.split("/")[-1].split(".")[0]]
-    my_pif.properties = [Property(name="SEM", files=FileReference(mime_type="image/"+file_type, relative_path=image))]
+    my_pif.ids = [image_path.split("/")[-1].split("_")[0]]
+    my_pif.names = [image_path.split("/")[-1].split(".")[0]]
+    my_pif.properties = [Property(name="SEM", files=FileReference(mime_type="image/"+file_type, relative_path=image_path))]
 
     return [my_pif]
 
@@ -62,16 +72,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for f in args.images:
-
-        if ".tif" in f:
-            convert_tif_to_jpeg(f)
-
-        if ".jpeg" in f:
-            system = image_to_pif(f, "jpeg")
-            f_out = f.replace(".jpeg", ".json")
-            pif.dump(system, open(f_out, "w"), indent=4)
-
-        if ".bmp" in f:
-            system = image_to_pif(f, "bmp")
-            f_out = f.replace(".bmp", ".json")
-            pif.dump(system, open(f_out, "w"), indent=4)
+        system = image_to_pif(f)
+        f_out = f.split(".")[0] + ".json"
+        print f_out
+        pif.dump(system, open(f_out, "w"), indent=4)
