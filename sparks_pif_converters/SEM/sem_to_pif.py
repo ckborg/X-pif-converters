@@ -56,6 +56,7 @@ def image_to_pif(image_path):
     if file_type == "tif":
         jpeg_path = convert_tif_to_jpeg(image_path)
         image_to_pif(jpeg_path)
+        return
 
     my_pif = ChemicalSystem()
     my_pif.ids = [image_path.split("/")[-1].split("_")[0]]
@@ -74,5 +75,5 @@ if __name__ == '__main__':
     for f in args.images:
         system = image_to_pif(f)
         f_out = f.split(".")[0] + ".json"
-        print f_out
+        print(f_out)
         pif.dump(system, open(f_out, "w"), indent=4)
