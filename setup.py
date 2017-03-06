@@ -8,9 +8,9 @@ setup(name='sparks_pif_converters',
     author_email='cborg@citrine.io',
     packages=find_packages(),
     install_requires=[
-        pypif,
-        peakutils,
-        pillow,
-        pyxrd    
+        'pypif',
+        'peakutils',
+        'pillow',
+        'pyxrd'   
     ]
 )
