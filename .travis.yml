@@ -6,4 +6,4 @@ install:
 - pip install pytest
 - python setup.py install
 script:
-- py.test pypif --verbose
+- py.test -r sparks_pif_converters --verbose
