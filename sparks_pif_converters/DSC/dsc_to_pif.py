@@ -3,14 +3,15 @@ import argparse
 from pypif import pif
 from pypif.obj import *
 import peakutils
-
+import os
+import re
 
 def netzsch_3500_to_pif(closed_csv):
     print("FILE IDENTIFIED AS NETZSCH 3500 OUTPUT FILE: %s" % closed_csv)
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
-    my_pif.ids = [closed_csv.split("/")[-1].split("_")[0]]
+    my_pif.ids = [os.path.basename(closed_csv).split("_")[0]]
     my_pif.properties = []
 
     # Store index so that iteration can start at next row. Default to False when no header is found.
@@ -79,6 +80,7 @@ def netzsch_3500_to_pif(closed_csv):
     # append conditions.
     heat_capacity.conditions = [temp, date, crucible, atmosphere, heating_rate]
     heat_capacity.instrument = measurement_device
+    heat_capacity.files = FileReference(relative_path=os.path.basename(closed_csv))
 
     # append property to pif
     my_pif.properties.append(heat_capacity)
