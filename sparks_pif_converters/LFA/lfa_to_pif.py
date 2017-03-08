@@ -77,7 +77,7 @@ def lfa457_to_pif(closed_csv):
             # we could find header row and collect all rows after it or regex row[0] for a decimal number
             if header_row_index:
                 if index > header_row_index:
-                    if row[temp_index] and row[diff_index] != "":
+                    if row[temp_index] and row[diff_index]:
                         temp_array.append(row[temp_index])
                         if std_index:
                             diffusivity_array.append(row[diff_index]+"$\pm$"+row[std_index])
