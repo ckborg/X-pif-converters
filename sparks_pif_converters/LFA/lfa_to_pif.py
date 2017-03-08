@@ -2,11 +2,15 @@ import csv
 import argparse
 from pypif import pif
 from pypif.obj import *
+import os
+
 
 def lfa457_to_pif(closed_csv):
+    print("FILE IDENTIFIED AS LFA-457: {}").format(closed_csv)
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
+    my_pif.ids = [os.path.basename(closed_csv).split("_")[0]]
     my_pif.properties = []
 
     # Store index so that iteration can start at next row. Default to False when no header is found.
@@ -60,7 +64,7 @@ def lfa457_to_pif(closed_csv):
                         diff_index = h_index
                     if "Std_Dev" in h:
                         std_index = h_index
-            if "#Shot" in row[0]:
+            if "#Shot" in row[0] or "#Time/min" in row[0]:
                 header_row_index = index
                 header_row = row
                 for h_index, h in enumerate(header_row):
@@ -73,11 +77,12 @@ def lfa457_to_pif(closed_csv):
             # we could find header row and collect all rows after it or regex row[0] for a decimal number
             if header_row_index:
                 if index > header_row_index:
-                    temp_array.append(row[temp_index])
-                    if std_index:
-                        diffusivity_array.append(row[diff_index]+"$\pm$"+row[std_index])
-                    else:
-                        diffusivity_array.append(row[diff_index])
+                    if row[temp_index] and row[diff_index]:
+                        temp_array.append(row[temp_index])
+                        if std_index:
+                            diffusivity_array.append(row[diff_index]+"$\pm$"+row[std_index])
+                        else:
+                            diffusivity_array.append(row[diff_index])
 
     heat_capacity = Property('Diffusivity', scalars=diffusivity_array, units='mm$^2$/s')
     temp = Value(name='Temperature', scalars=temp_array, units='$^\circ$C')
@@ -85,6 +90,7 @@ def lfa457_to_pif(closed_csv):
 
     heat_capacity.conditions = [temp, date, atmosphere, flow]
     heat_capacity.instrument = measurement_device
+    heat_capacity.files = FileReference(relative_path=os.path.basename(closed_csv))
 
     my_pif.properties.append(heat_capacity)
     my_pif.properties.append(thickness)
@@ -100,8 +106,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for f in args.csv:
-        print ("PARSING: %s" % f)
+        print("PARSING: {}".format(f))
         pifs = lfa457_to_pif(f)
-
         f_out = f.replace(".csv", ".json")
+        print("OUTPUT FILE: {}").format(f_out)
         pif.dump(pifs, open(f_out, "w"), indent=4)

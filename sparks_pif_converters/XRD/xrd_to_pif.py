@@ -4,12 +4,13 @@ from pypif import pif
 from pypif.obj import *
 from pyxrd.file_parsers.xrd_parsers import BrkRAWParser
 import re
-
+import os
 
 def raw4_txt_to_pif(closed_txt):
 
     # create chemical system and property array
     my_pif = ChemicalSystem()
+    my_pif.ids = [os.path.basename(closed_txt).split("_")[0]]
     my_pif.properties = []
 
     # Store header index so that iteration can start at next row. Default to False when no header is found.
@@ -55,21 +56,25 @@ def raw4_txt_to_pif(closed_txt):
 
 
 def raw_to_pif(raw_xrd_file):
+    print("FILE IDENTIFIED AS .raw: {}").format(raw_xrd_file)
 
     # parses .raw file
     try:
-        parsed_raw = BrkRAWParser.parse(raw_xrd_file)
-
         my_pif = ChemicalSystem()
-        my_pif.chemical_formula = raw_xrd_file.split("/")[-1].replace(".raw", "").split("_")[0]
-        my_pif.ids = "".join(raw_xrd_file.split("/")[-1].replace(".raw", "").split("_")[1:])
-
+        my_pif.ids = [os.path.basename(raw_xrd_file).split("_")[0]]
+        my_pif.chemical_formula = os.path.basename(raw_xrd_file).rpartition(".")[0].split("_")[1]
         my_pif.properties = []
+        if re.search(r'[0-9]+-[0-9]+-[0-9]+', os.path.basename(raw_xrd_file)):
+            date = re.search(r'[0-9]+-[0-9]+-[0-9]+', os.path.basename(raw_xrd_file)).group()
+            date = Property(name="Date", scalars=date)
+            my_pif.properties.append(date)
 
         theta = []
         intensity = []
+
+        parsed_raw = BrkRAWParser.parse(raw_xrd_file)
         for xrd in parsed_raw:
-            # xrd.date
+            # print(vars(xrd))
             a1 = Value(name="wavelength of $\\alpha_1$", scalars=xrd.alpha1, units="$\AA$")
             a2 = Value(name="wavelength of $\\alpha_2$", scalars=xrd.alpha2, units="$\AA$")
 
@@ -82,14 +87,17 @@ def raw_to_pif(raw_xrd_file):
         I_max = Property(name="2$\\theta$ (I$_{max}$)", scalars=theta[I_max_index], units="$^\circ$")
         twotheta = Value(name="2$\\theta$", scalars=theta, units="$^\circ$")
         peaks.conditions = [twotheta, a1, a2]
+        peaks.files = FileReference(relative_path=os.path.basename(raw_xrd_file))
 
         my_pif.properties.append(peaks)
         my_pif.properties.append(I_max)
 
         return my_pif
 
-    except Exception as e:
+    except IOError as e:
         print(e)
+        print("RAW V4 FILE NOT PARSED")
+        return None
 
 
 if __name__ == '__main__':
@@ -110,6 +118,7 @@ if __name__ == '__main__':
         if ".raw" in f:
             print ("PARSING: {}".format(f))
             pifs = raw_to_pif(f)
-            f_out = f.replace(".raw", ".json")
-            print ("OUTPUT: {}".format(f_out))
-            pif.dump(pifs, open(f_out, "w"), indent=4)
+            if pifs:
+                f_out = f.replace(".raw", ".json")
+                print ("OUTPUT: {}".format(f_out))
+                pif.dump(pifs, open(f_out, "w"), indent=4)
