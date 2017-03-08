@@ -62,7 +62,7 @@ def raw_to_pif(raw_xrd_file):
     try:
         my_pif = ChemicalSystem()
         my_pif.ids = [os.path.basename(raw_xrd_file).split("_")[0]]
-        my_pif.chemical_formula = os.path.basename(raw_xrd_file).replace(".raw", "").split("_")[1]
+        my_pif.chemical_formula = os.path.basename(raw_xrd_file).rpartition(".")[0].split("_")[1]
         my_pif.properties = []
         if re.search(r'[0-9]+-[0-9]+-[0-9]+', os.path.basename(raw_xrd_file)):
             date = re.search(r'[0-9]+-[0-9]+-[0-9]+', os.path.basename(raw_xrd_file)).group()
@@ -96,7 +96,7 @@ def raw_to_pif(raw_xrd_file):
 
     except IOError as e:
         print(e)
-        print "RAW V4 FILE NOT PARSED"
+        print("RAW V4 FILE NOT PARSED")
         return None
 
 
